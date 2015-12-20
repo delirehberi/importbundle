@@ -1,0 +1,23 @@
+{
+  "name": "delirehberi/importbundle",
+  "description": "A tool for transfer data between different databases",
+  "minimum-stability": "beta",
+  "license": "mit",
+  "type": "symfony-bundle",
+  "homepage": "https://github.com/delirehberi/importbundle",
+  "keywords": ["Symfony", "import"],
+  "require": {
+    "php": ">=5.3.2",
+    "symfony/symfony": "2.*",
+    "symfony/console": "*"
+  },
+  "autoload": {
+    "psr-4": { "Delirehberi\\ImportBundle\\": "" }
+  },
+  "authors": [
+    {
+      "name": "Emre YILMAZ",
+      "email": "z@emre.xyz"
+    }
+  ]
+}
