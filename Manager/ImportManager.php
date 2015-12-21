@@ -56,32 +56,21 @@ class ImportManager
     }
 
 
-    public function startImport(OutputInterface &$output)
+    public function startImport(OutputInterface &$output, $map_key = null)
     {
         try {
             $this->debug && $this->logger->info("Import started.");
-            foreach ($this->maps as $connection_key => $config) {
-
-                $this->connection = $this->connectionFactory->createConnection($config['database']);
-
-                foreach ((array)$config['maps'] as $key => $map) {
-
-                    if (!$this->container->has($map['old_data']['service_id'])) {
-                        throw new \Exception("Service not exists: " . $map['old_data']['service_id']);
-                    }
-
-                    $old_data_service = $this->container->get($map['old_data']['service_id']);
-
-                    if(!method_exists($old_data_service,$map['old_data']['method'])){
-                        throw new \Exception("Method not found in service. Service: ".$map['old_data']['service_id']." , method: ".$map['old_data']['method']);
-                    }
-
-                    $old_data = call_user_func_array([$old_data_service,$map['old_data']['method']],[$this->connection]);
-                    $result = $this->mapping($old_data, $map);
-                    $output->writeln("Total imported $key " . count($result));
+            if ($map_key) {
+                if(!isset($this->maps[$map_key])){
+                    throw new \Exception("$map_key not found");
                 }
+                $config = $this->maps[$map_key];
+                $this->singleImport($config, $output);
+            } else {
 
-                $this->connection->close();
+                foreach ($this->maps as $connection_key => $config) {
+                    $this->singleImport($config, $output);
+                }
             }
 
             $this->debug && $this->logger->info("Import completed.");
@@ -92,6 +81,30 @@ class ImportManager
                 "code" => $e->getCode()
             ]);
         }
+    }
+
+    private function singleImport($config, OutputInterface &$output)
+    {
+        $this->connection = $this->connectionFactory->createConnection($config['database']);
+
+        foreach ((array)$config['maps'] as $key => $map) {
+
+            if (!$this->container->has($map['old_data']['service_id'])) {
+                throw new \Exception("Service not exists: " . $map['old_data']['service_id']);
+            }
+
+            $old_data_service = $this->container->get($map['old_data']['service_id']);
+
+            if (!method_exists($old_data_service, $map['old_data']['method'])) {
+                throw new \Exception("Method not found in service. Service: " . $map['old_data']['service_id'] . " , method: " . $map['old_data']['method']);
+            }
+
+            $old_data = call_user_func_array([$old_data_service, $map['old_data']['method']], [$this->connection]);
+            $result = $this->mapping($old_data, $map);
+            $output->writeln("Total imported $key " . count($result));
+        }
+
+        $this->connection->close();
     }
 
     private function mapping(array $old_data, array $map)
@@ -141,11 +154,11 @@ class ImportManager
 
                 $modifier = $this->container->get($options['modifier']['service_id']);
 
-                if(!method_exists($modifier,$options['modifier']['method'])){
-                    throw new \Exception("Method not found in service. Service: ".$options['modifier']['service_id']." , method: ".$options['modifier']['method']);
+                if (!method_exists($modifier, $options['modifier']['method'])) {
+                    throw new \Exception("Method not found in service. Service: " . $options['modifier']['service_id'] . " , method: " . $options['modifier']['method']);
                 }
 
-                $value = call_user_func_array([$modifier,$options['modifier']['method']],[
+                $value = call_user_func_array([$modifier, $options['modifier']['method']], [
                     $value, &$item, $this->connection, &$this->em
                 ]);
 
@@ -191,11 +204,11 @@ class ImportManager
 
             $modifier_service = $this->container->get($options['modifier']['service_id']);
 
-            if(!method_exists($modifier_service,$options['modifier']['method'])){
-                throw new \Exception("Method not found in service. Service: ".$options['modifier']['service_id']." , method: ".$options['modifier']['method']);
+            if (!method_exists($modifier_service, $options['modifier']['method'])) {
+                throw new \Exception("Method not found in service. Service: " . $options['modifier']['service_id'] . " , method: " . $options['modifier']['method']);
             }
 
-            $object = call_user_func_array([$modifier_service,$options['modifier']['method']],[
+            $object = call_user_func_array([$modifier_service, $options['modifier']['method']], [
                 $value, &$item, $this->connection, &$this->em
             ]);
         }

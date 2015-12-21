@@ -3,6 +3,7 @@
 namespace Delirehberi\ImportBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -15,6 +16,7 @@ class ImportCommand extends ContainerAwareCommand
     {
         $this
             ->setName('delirehberi:import')
+            ->addArgument('map',InputArgument::OPTIONAL,"Map specified import")
             ->setDescription('Import any data to your project');
     }
 
@@ -26,7 +28,7 @@ class ImportCommand extends ContainerAwareCommand
         $container = $this->getContainer();
         $importManager = $container->get('delirehberi.import.manager');
         $output->writeln("Import Started");
-        $importManager->startImport($output);
+        $importManager->startImport($output,$input->getArgument('map'));
         $output->writeln("Import Completed");
     }
 }
