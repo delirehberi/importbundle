@@ -119,7 +119,7 @@ class ImportManager
         $this->debug && $this->logger->info("Mapping started.");
         $data = [];
         foreach ($old_data as $item) {
-            $newItem = new $map['entity'];
+            $newItem = $this->getItem($map, $item);
             foreach ($item as $key => $value) {
                 $this->equalise($map, $key, $value, $newItem);
             }
@@ -129,6 +129,24 @@ class ImportManager
         $this->em->flush();
         $this->debug && $this->logger->info("Mapping completed.");
         return $data;
+    }
+
+    private function getItem($map, $item)
+    {
+        foreach ($map['fields'] as $key => $field) {
+            if ($field['name'] == 'old_id') ;
+        }
+        if (isset($map['fields']['old_id'])) {//is checkable
+            $repositoryClass = $this->em->getRepository($map['entity']);
+            $oldIdColumnName = $map['fields']['old_id']['name'];
+            $existing_item = $repositoryClass->findOneBy(['old_id' => $item[$oldIdColumnName]]);
+            if ($existing_item) {
+                $this->debug
+                && $this->logger->notice("Item existing.", ['entity' => $map['entity'], 'id' => $existing_item->getId()]);
+                return $existing_item;
+            }
+        }
+        return new $map['entity'];
     }
 
     private function equalise($map, $key, $value, &$item)
