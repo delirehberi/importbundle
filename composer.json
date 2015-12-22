@@ -22,5 +22,5 @@
       "role": "Full Stack Web Developer"
     }
   ],
-  "bin":[ "bin/bulk-import" ]
+  "bin":[ "bin/batch-import" ]
 }
