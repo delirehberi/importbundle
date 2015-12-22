@@ -74,4 +74,8 @@ parameters:
 
 Step 4: Run the command
 
-`delirehberi:import`
+`php app/console delirehberi:import connection_key entity_alias -d1 -l10 -o0`
+
+ * -d | --debug - optional
+ * -l | --limit - optional
+ * -o | --ofset - optional
