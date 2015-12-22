@@ -22,5 +22,5 @@
       "role": "Full Stack Web Developer"
     }
   ],
-  "bin":[ "bin/batch-import" ]
+  "bin":[ "Resources/bin/batch-import" ]
 }
