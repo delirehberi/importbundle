@@ -61,7 +61,7 @@ class ImportManager
         try {
             $this->debug && $this->logger->info("Import started.");
             if ($map_key) {
-                if(!isset($this->maps[$map_key])){
+                if (!isset($this->maps[$map_key])) {
                     throw new \Exception("$map_key not found");
                 }
                 $config = $this->maps[$map_key];
@@ -98,10 +98,17 @@ class ImportManager
             if (!method_exists($old_data_service, $map['old_data']['method'])) {
                 throw new \Exception("Method not found in service. Service: " . $map['old_data']['service_id'] . " , method: " . $map['old_data']['method']);
             }
-
-            $old_data = call_user_func_array([$old_data_service, $map['old_data']['method']], [$this->connection]);
-            $result = $this->mapping($old_data, $map);
-            $output->writeln("Total imported $key " . count($result));
+            $offset = 0;
+            do {
+                $old_data = call_user_func_array([
+                    $old_data_service, $map['old_data']['method']
+                ], [
+                    $this->connection, $offset
+                ]);
+                $result = $this->mapping($old_data, $map);
+                $output->writeln("Total imported $key " . count($result));
+                $offset++;
+            } while ($old_data);
         }
 
         $this->connection->close();
@@ -222,5 +229,11 @@ class ImportManager
         }
         $this->em->persist($object);
         return $object;
+    }
+
+    public function setDebug($debug)
+    {
+        $this->debug = $debug;
+        return $this;
     }
 }
