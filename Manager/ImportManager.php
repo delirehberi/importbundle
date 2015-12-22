@@ -37,6 +37,10 @@ class ImportManager
     private $debug = FALSE;
     /** @var ContainerInterface */
     private $container;
+    /** @var int */
+    private $offset = 0;
+    /** @var int */
+    private $limit = 100;
 
     /**
      * ImportManager constructor.
@@ -53,10 +57,12 @@ class ImportManager
         $this->maps = $maps;
         $this->accessor = PropertyAccess::createPropertyAccessor();
         $this->container = $containerInterface;
+        $this->em->getConnection()->getConfiguration()->getSQLLogger(null);
+
     }
 
 
-    public function startImport(OutputInterface &$output, $map_key = null)
+    public function startImport(OutputInterface &$output, $map_key = null, $entity_key = null)
     {
         try {
             $this->debug && $this->logger->info("Import started.");
@@ -65,9 +71,8 @@ class ImportManager
                     throw new \Exception("$map_key not found");
                 }
                 $config = $this->maps[$map_key];
-                $this->singleImport($config, $output);
+                $this->singleImport($config, $output, $entity_key);
             } else {
-
                 foreach ($this->maps as $connection_key => $config) {
                     $this->singleImport($config, $output);
                 }
@@ -83,35 +88,61 @@ class ImportManager
         }
     }
 
-    private function singleImport($config, OutputInterface &$output)
+    private function singleImport($config, OutputInterface &$output, $entity_key = null)
     {
         $this->connection = $this->connectionFactory->createConnection($config['database']);
+        $this->connection->getConfiguration()->getSQLLogger(null);
 
-        foreach ((array)$config['maps'] as $key => $map) {
-
+        if ($entity_key) {
+            if (!isset($config['maps'][$entity_key])) {
+                throw new \Exception("Entity alias not found: " . $entity_key);
+            }
+            $map = $config['maps'][$entity_key];
             if (!$this->container->has($map['old_data']['service_id'])) {
                 throw new \Exception("Service not exists: " . $map['old_data']['service_id']);
             }
+            $result = $this->importEntity($map);
+            $output->writeln("<info>Total ".count($result)." $entity_key imported </info>");
+        } else {
+            foreach ((array)$config['maps'] as $key => $map) {
 
-            $old_data_service = $this->container->get($map['old_data']['service_id']);
+                if (!$this->container->has($map['old_data']['service_id'])) {
+                    throw new \Exception("Service not exists: " . $map['old_data']['service_id']);
+                }
+                $offset = 0;
+                do {
+                    $result = $this->importEntity($map);
+                    $output->writeln("<info>Total ".count($result)." $key imported </info>");
 
-            if (!method_exists($old_data_service, $map['old_data']['method'])) {
-                throw new \Exception("Method not found in service. Service: " . $map['old_data']['service_id'] . " , method: " . $map['old_data']['method']);
+                    if(!$result){
+                        break;
+                    }
+
+                    $offset++;
+
+                    $this->setOffset($offset);
+
+                } while (true);
             }
-            $offset = 0;
-            do {
-                $old_data = call_user_func_array([
-                    $old_data_service, $map['old_data']['method']
-                ], [
-                    $this->connection, $offset
-                ]);
-                $result = $this->mapping($old_data, $map);
-                $output->writeln("Total imported $key " . count($result));
-                $offset++;
-            } while ($old_data);
         }
 
         $this->connection->close();
+    }
+
+    private function importEntity($map)
+    {
+        $old_data_service = $this->container->get($map['old_data']['service_id']);
+
+        if (!method_exists($old_data_service, $map['old_data']['method'])) {
+            throw new \Exception("Method not found in service. Service: " . $map['old_data']['service_id'] . " , method: " . $map['old_data']['method']);
+        }
+        $old_data = call_user_func_array([
+            $old_data_service, $map['old_data']['method']
+        ], [
+            $this->connection, $this->getOffset(), $this->getLimit()
+        ]);
+        $result = $this->mapping($old_data, $map);
+        return $result;
     }
 
     private function mapping(array $old_data, array $map)
@@ -127,6 +158,7 @@ class ImportManager
             $this->em->persist($newItem);
         }
         $this->em->flush();
+
         $this->debug && $this->logger->info("Mapping completed.");
         return $data;
     }
@@ -192,7 +224,7 @@ class ImportManager
                 if (!array_key_exists('format', $options)) {
                     $options['format'] = "Y-m-d H:i:s";
                 }
-                $value = $value ? \DateTime::createFromFormat($options['format'], $value) : new \DateTime();
+                $value = empty($value) ? \DateTime::createFromFormat($options['format'], $value) : new \DateTime();
                 break;
             case "bool":
                 break;
@@ -254,4 +286,42 @@ class ImportManager
         $this->debug = $debug;
         return $this;
     }
+
+    /**
+     * @return int
+     */
+    public function getLimit()
+    {
+        return $this->limit;
+    }
+
+    /**
+     * @param int $limit
+     * @return ImportManager
+     */
+    public function setLimit($limit)
+    {
+        $this->limit = $limit;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getOffset()
+    {
+        return $this->offset;
+    }
+
+    /**
+     * @param int $offset
+     * @return ImportManager
+     */
+    public function setOffset($offset)
+    {
+        $this->offset = $offset;
+        return $this;
+    }
+
+
 }

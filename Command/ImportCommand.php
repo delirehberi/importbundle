@@ -16,8 +16,11 @@ class ImportCommand extends ContainerAwareCommand
     {
         $this
             ->setName('delirehberi:import')
-            ->addArgument('map',InputArgument::OPTIONAL,"Map specified import")
+            ->addArgument('map',InputArgument::OPTIONAL,"")
+            ->addArgument('entity',InputArgument::OPTIONAL,"")
             ->addOption('debug','-d',InputArgument::OPTIONAL,"Debug mode")
+            ->addOption('offset','-o',InputArgument::OPTIONAL,"Offset")
+            ->addOption('limit','-l',InputArgument::OPTIONAL,"Limit")
             ->setDescription('Import any data to your project');
     }
 
@@ -27,10 +30,20 @@ class ImportCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $container = $this->getContainer();
+        $this->getApplication()->setAutoExit(false);
         $importManager = $container->get('delirehberi.import.manager');
         $output->writeln("Import Started");
-        $importManager->setDebug($input->getOption('debug')?true:false);
-        $importManager->startImport($output,$input->getArgument('map'));
+        $debug = $input->getOption('debug')?true:false;
+        $limit = $input->getOption('limit');
+        $offset = $input->getOption('offset');
+        $entity = $input->getArgument('entity');
+        $map = $input->getArgument('map');
+        $importManager
+            ->setDebug($debug)
+            ->setLimit($limit)
+            ->setOffset($offset)
+        ;
+        $importManager->startImport($output,$map,$entity);
         $output->writeln("Import Completed");
     }
 }
