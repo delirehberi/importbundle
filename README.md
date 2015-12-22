@@ -72,10 +72,8 @@ parameters:
           ...
 ```
 
-Step 4: Run the command
+Documentation
+=============
 
-`php app/console delirehberi:import connection_key entity_alias -d1 -l10 -o0`
+See the [summary](https://github.com/delirehber/importbundle/blob/master/Resources/doc/summary.md).
 
- * -d | --debug - optional
- * -l | --limit - optional
- * -o | --ofset - optional

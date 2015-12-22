@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+while [[ $# > 1 ]]
+do
+key="$1"
+case $key in
+    -t|--total)
+    TOTAL="$2"
+    shift # past argument
+    ;;
+    -l|--limit)
+    LIMIT="$2"
+    shift # past argument
+    ;;
+    -e|--entity)
+    ENTITY="$2"
+    shift
+    ;;
+    -m|--map)
+    MAP="$2"
+    shift
+    ;;
+    --default)
+    DEFAULT=YES
+    ;;
+    *)
+            # unknown option
+    ;;
+esac
+shift # past argument or value
+done
+i=0
+while [ `expr $i \* $LIMIT` -le $TOTAL ]
+do
+    echo `expr $i \* $LIMIT` "to " `expr $i \* $LIMIT + $LIMIT`
+    php app/console delirehberi:import $MAP $ENTITY -d1 -l$LIMIT -o$i
+    i=`expr $i + 1`
+done

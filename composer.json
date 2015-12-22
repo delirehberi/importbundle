@@ -5,11 +5,11 @@
   "license": "mit",
   "type": "symfony-bundle",
   "homepage": "https://github.com/delirehberi/importbundle",
-  "keywords": ["Symfony", "import"],
+  "keywords": ["Symfony", "import","data-transfer"],
   "require": {
     "php": ">=5.3.2",
-    "symfony/symfony": "2.*",
-    "symfony/console": "*"
+    "symfony/symfony": ">=2.7",
+    "symfony/console": "*",
   },
   "autoload": {
     "psr-4": { "Delirehberi\\ImportBundle\\": "" }
@@ -17,7 +17,10 @@
   "authors": [
     {
       "name": "Emre YILMAZ",
-      "email": "z@emre.xyz"
+      "email": "z@emre.xyz",
+      "homepage": "http://emre.xyz",
+      "role": "Full Stack Web Developer"
     }
-  ]
+  ],
+  "bin":[ "bin/bulk-import" ]
 }
