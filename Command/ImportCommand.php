@@ -17,6 +17,7 @@ class ImportCommand extends ContainerAwareCommand
         $this
             ->setName('delirehberi:import')
             ->addArgument('map',InputArgument::OPTIONAL,"Map specified import")
+            ->addOption('debug','-d',InputArgument::OPTIONAL,"Debug mode")
             ->setDescription('Import any data to your project');
     }
 
@@ -28,6 +29,7 @@ class ImportCommand extends ContainerAwareCommand
         $container = $this->getContainer();
         $importManager = $container->get('delirehberi.import.manager');
         $output->writeln("Import Started");
+        $importManager->setDebug($input->getOption('debug')?true:false);
         $importManager->startImport($output,$input->getArgument('map'));
         $output->writeln("Import Completed");
     }
