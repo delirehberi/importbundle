@@ -224,7 +224,7 @@ class ImportManager
                 if (!array_key_exists('format', $options)) {
                     $options['format'] = "Y-m-d H:i:s";
                 }
-                $value = empty($value) ? \DateTime::createFromFormat($options['format'], $value) : new \DateTime();
+                $value = !empty($value) ? \DateTime::createFromFormat($options['format'], $value) : new \DateTime();
                 break;
             case "bool":
                 break;
