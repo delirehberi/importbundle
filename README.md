@@ -75,5 +75,5 @@ parameters:
 Documentation
 =============
 
-See the [summary](https://github.com/delirehber/importbundle/blob/master/Resources/doc/summary.md).
+See the [summary](https://github.com/delirehberi/importbundle/blob/master/Resources/doc/summary.md).
 
