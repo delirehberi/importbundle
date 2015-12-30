@@ -1,7 +1,10 @@
+# Import Bundle
+
+[![Join the chat at https://gitter.im/delirehberi/importbundle](https://badges.gitter.im/delirehberi/importbundle.svg)](https://gitter.im/delirehberi/importbundle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Installation
 ============
 
-[![Join the chat at https://gitter.im/delirehberi/importbundle](https://badges.gitter.im/delirehberi/importbundle.svg)](https://gitter.im/delirehberi/importbundle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Step 1: Download the Bundle
 ---------------------------
