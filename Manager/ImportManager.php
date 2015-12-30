@@ -102,7 +102,7 @@ class ImportManager
                 throw new \Exception("Service not exists: " . $map['old_data']['service_id']);
             }
             $result = $this->importEntity($map);
-            $output->writeln("<info>Total ".count($result)." $entity_key imported </info>");
+            $output->writeln("<info>Total " . count($result) . " $entity_key imported </info>");
         } else {
             foreach ((array)$config['maps'] as $key => $map) {
 
@@ -112,9 +112,9 @@ class ImportManager
                 $offset = 0;
                 do {
                     $result = $this->importEntity($map);
-                    $output->writeln("<info>Total ".count($result)." $key imported </info>");
+                    $output->writeln("<info>Total " . count($result) . " $key imported </info>");
 
-                    if(!$result){
+                    if (!$result) {
                         break;
                     }
 
@@ -202,31 +202,17 @@ class ImportManager
             case "string":
             case "text":
             case "integer":
-                break;
             case "collection":
-
-                if (!$this->container->has($options['modifier']['service_id'])) {
-                    throw new \Exception("Service not exists: " . $options['modifier']['service_id']);
+            case "bool":
+                if (isset($options['modifier'])) {
+                    $value = $this->modify($value, $options['modifier'], $item);
                 }
-
-                $modifier = $this->container->get($options['modifier']['service_id']);
-
-                if (!method_exists($modifier, $options['modifier']['method'])) {
-                    throw new \Exception("Method not found in service. Service: " . $options['modifier']['service_id'] . " , method: " . $options['modifier']['method']);
-                }
-
-                $value = call_user_func_array([$modifier, $options['modifier']['method']], [
-                    $value, &$item, $this->connection, &$this->em
-                ]);
-
                 break;
             case "date":
                 if (!array_key_exists('format', $options)) {
                     $options['format'] = "Y-m-d H:i:s";
                 }
                 $value = !empty($value) ? \DateTime::createFromFormat($options['format'], $value) : new \DateTime();
-                break;
-            case "bool":
                 break;
             case "object":
                 $value = $this->setObjectValue($item, $key, $value, $options);
@@ -244,6 +230,24 @@ class ImportManager
         $this->debug && $this->logger->info("Value adding is completed.");
     }
 
+    private function modify($value, $options, &$item)
+    {
+        if (!$this->container->has($options['service_id'])) {
+            throw new \Exception("Service not exists: " . $options['service_id']);
+        }
+
+        $modifier = $this->container->get($options['service_id']);
+
+        if (!method_exists($modifier, $options['method'])) {
+            throw new \Exception("Method not found in service. Service: " . $options['service_id'] . " , method: " . $options['method']);
+        }
+
+        $value = call_user_func_array([$modifier, $options['method']], [
+            $value, &$item, $this->connection, &$this->em
+        ]);
+        return $value;
+    }
+
     public function setObjectValue(&$item, $key, $value, $options)
     {
         if (!$value) {
@@ -251,23 +255,10 @@ class ImportManager
         }
 
         $object = $this->accessor->getValue($item, $key);
-
         if (!$object and array_key_exists('entity', $options)) {
             $object = new $options['entity'];
         } elseif (!$object and array_key_exists('modifier', $options)) {
-            if (!$this->container->has($options['modifier']['service_id'])) {
-                throw new \Exception("Service not exists: " . $options['modifier']['service_id']);
-            }
-
-            $modifier_service = $this->container->get($options['modifier']['service_id']);
-
-            if (!method_exists($modifier_service, $options['modifier']['method'])) {
-                throw new \Exception("Method not found in service. Service: " . $options['modifier']['service_id'] . " , method: " . $options['modifier']['method']);
-            }
-
-            $object = call_user_func_array([$modifier_service, $options['modifier']['method']], [
-                $value, &$item, $this->connection, &$this->em
-            ]);
+            $object = $this->modify($value, $options['modifier'], $item);
         }
 
         if (array_key_exists('fields', $options)) {
