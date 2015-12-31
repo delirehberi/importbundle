@@ -197,37 +197,66 @@ class ImportManager
 
     private function setValue(&$item, $key, $value, $options = [])
     {
-        $this->debug && $this->logger->info("Value adding is started.");
-        switch ($options['type']) {
-            case "string":
-            case "text":
-            case "integer":
-            case "collection":
-            case "bool":
-                if (isset($options['modifier'])) {
-                    $value = $this->modify($value, $options['modifier'], $item);
-                }
-                break;
-            case "date":
-                if (!array_key_exists('format', $options)) {
-                    $options['format'] = "Y-m-d H:i:s";
-                }
-                $value = !empty($value) ? \DateTime::createFromFormat($options['format'], $value) : new \DateTime();
-                break;
-            case "object":
-                $value = $this->setObjectValue($item, $key, $value, $options);
-                break;
+        try {
+
+            $this->debug && $this->logger->info("Value adding is started.");
+            switch ($options['type']) {
+                case "string":
+                case "text":
+                case "integer":
+                case "collection":
+                case "bool":
+                    if (isset($options['modifier'])) {
+                        $value = $this->modify($value, $options['modifier'], $item);
+                    }
+                    break;
+                case "date":
+                    if (isset($options['modifier'])) {
+                        $value = $this->modify($value, $options['modifier'], $item);
+                    } else {
+                        $value = $this->modifyDate($value, $options);
+                    }
+                    break;
+                case "object":
+                    $value = $this->setObjectValue($item, $key, $value, $options);
+                    break;
+            }
+
+            if (array_key_exists('value', $options)) {
+                $value = $options['value'];
+            }
+
+            $value ?
+                $this->accessor->setValue($item, $key, $value) :
+                $this->logger->alert("Value is null for $key.");
+
+            $this->debug && $this->logger->info("Value adding is completed.");
+
+        } catch (\Exception $e) {
+            $this->logger->critical($e->getMessage());
+        }
+    }
+
+    private function modifyDate($value, $options)
+    {
+
+        if (!array_key_exists('format', $options)) {
+            $options['format'] = "Y-m-d H:i:s";
         }
 
-        if (array_key_exists('value', $options)) {
-            $value = $options['value'];
+        $original_value = $value;
+        $value = $value ? \DateTime::createFromFormat($options['format'], $value) : new \DateTime();
+        if ($value === false) {
+            throw new \Exception(json_encode(array_merge(
+                \DateTime::getLastErrors(),
+                [
+                    'format' => $options['format'],
+                    'value' => $original_value,
+                    'date' => (new \DateTime())->format($options['format'])
+                ]
+            )));
         }
-
-        $value ?
-            $this->accessor->setValue($item, $key, $value) :
-            $this->logger->alert("Value is null for $key.");
-
-        $this->debug && $this->logger->info("Value adding is completed.");
+        return $value;
     }
 
     private function modify($value, $options, &$item)
