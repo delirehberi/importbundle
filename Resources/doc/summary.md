@@ -1,6 +1,9 @@
 ## Command Usage
 wip
 
+## Connecting Other databases
+[Connection to a MS SQL Server from Symfony / Doctrine on Mac or Linux](https://dunglas.fr/2014/01/connection-to-a-ms-sql-server-from-symfony-doctrine-on-mac-or-linux/)
+
 ## Import Manager
 wip
 
