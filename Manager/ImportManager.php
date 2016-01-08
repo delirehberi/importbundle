@@ -83,7 +83,6 @@ class ImportManager
             $this->logger->critical($e->getMessage(), [
                 "file" => $e->getFile(),
                 "line" => $e->getLine(),
-                "code" => $e->getCode()
             ]);
         }
     }
@@ -197,8 +196,8 @@ class ImportManager
 
     private function setValue(&$item, $key, $value, $options = [])
     {
-        try {
 
+        try {
             $this->debug && $this->logger->info("Value adding is started.");
             switch ($options['type']) {
                 case "string":
@@ -233,7 +232,11 @@ class ImportManager
             $this->debug && $this->logger->info("Value adding is completed.");
 
         } catch (\Exception $e) {
-            $this->logger->critical($e->getMessage());
+            $this->logger->critical("Unexpected error",[
+                'message'=>$e->getMessage(),
+                'file'=>$e->getFile(),
+                'line'=>$e->getLine()
+            ]);
         }
     }
 
