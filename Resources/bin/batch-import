@@ -15,6 +15,10 @@ case $key in
     ENTITY="$2"
     shift
     ;;
+    -o|--offset)
+    OFFSET="$2"
+    shift
+    ;;
     -m|--map)
     MAP="$2"
     shift
@@ -28,7 +32,14 @@ case $key in
 esac
 shift # past argument or value
 done
+
+if [ $OFFSET -gt 0 ]
+then
+i=$OFFSET
+else
 i=0
+fi
+
 while [ `expr $i \* $LIMIT` -le $TOTAL ]
 do
     echo `expr $i \* $LIMIT` "to " `expr $i \* $LIMIT + $LIMIT`
