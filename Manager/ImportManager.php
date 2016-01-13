@@ -41,7 +41,7 @@ class ImportManager
     private $offset = 0;
     /** @var int */
     private $limit = 100;
-
+    private $update = TRUE;
     /**
      * ImportManager constructor.
      * @param ConnectionFactory $connectionFactory
@@ -150,6 +150,9 @@ class ImportManager
         $data = [];
         foreach ($old_data as $item) {
             $newItem = $this->getItem($map, $item);
+            if($newItem->getId() && $this->isUpdate()===FALSE){
+                continue;
+            }
             foreach ($item as $key => $value) {
                 $this->equalise($map, $key, $value, $newItem);
             }
@@ -164,9 +167,6 @@ class ImportManager
 
     private function getItem($map, $item)
     {
-        foreach ($map['fields'] as $key => $field) {
-            if ($field['name'] == 'old_id') ;
-        }
         if (isset($map['fields']['old_id'])) {//is checkable
             $repositoryClass = $this->em->getRepository($map['entity']);
             $oldIdColumnName = $map['fields']['old_id']['name'];
@@ -345,6 +345,24 @@ class ImportManager
         $this->offset = $offset;
         return $this;
     }
+
+    /**
+     * @return boolean
+     */
+    public function isUpdate()
+    {
+        return $this->update;
+    }
+
+    /**
+     * @param boolean $update
+     */
+    public function setUpdate($update)
+    {
+        $this->update = $update;
+        return $this;
+    }
+
 
 
 }
