@@ -77,6 +77,13 @@ parameters:
           ...
 ```
 
+Ps: if you don't  want update existing items you can add this config to your config.yml file:
+
+```
+delirehberi_import:
+    update: false
+```
+
 Documentation
 =============
 
