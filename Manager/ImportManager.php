@@ -55,6 +55,7 @@ class ImportManager
         $this->em = $entityManager;
         $this->logger = $loggerInterface;
         $this->maps = $maps;
+        $this->update = $containerInterface->getParameter('delirehberi_import.update');
         $this->accessor = PropertyAccess::createPropertyAccessor();
         $this->container = $containerInterface;
         $this->em->getConnection()->getConfiguration()->getSQLLogger(null);
