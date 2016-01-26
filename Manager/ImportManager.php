@@ -220,15 +220,21 @@ class ImportManager
                 case "object":
                     $value = $this->setObjectValue($item, $key, $value, $options);
                     break;
+                case "mixed":
+                    $value = $this->setMixedValue($item,$key,$value,$options);
             }
 
             if (array_key_exists('value', $options)) {
                 $value = $options['value'];
             }
 
-            $value ?
-                $this->accessor->setValue($item, $key, $value) :
-                $this->logger->alert("Value is null for $key.");
+            if(isset($options['mapped']) && $mapped!==false){
+                $value ?
+                    $this->accessor->setValue($item, $key, $value) :
+                    $this->logger->alert("Value is null for $key.");
+            }else{
+                $this->debug && $this->logger->info("Value not mapped");
+            }
 
             $this->debug && $this->logger->info("Value adding is completed.");
 
@@ -274,10 +280,10 @@ class ImportManager
         if (!method_exists($modifier, $options['method'])) {
             throw new \Exception("Method not found in service. Service: " . $options['service_id'] . " , method: " . $options['method']);
         }
-
         $value = call_user_func_array([$modifier, $options['method']], [
             $value, &$item, $this->connection, &$this->em
         ]);
+
         return $value;
     }
 
@@ -292,6 +298,7 @@ class ImportManager
             $object = new $options['entity'];
         } elseif (!$object and array_key_exists('modifier', $options)) {
             $object = $this->modify($value, $options['modifier'], $item);
+
         }
 
         if (array_key_exists('fields', $options)) {
