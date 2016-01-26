@@ -199,7 +199,7 @@ class ImportManager
     {
 
         try {
-            $this->debug && $this->logger->info("Value adding is started.");
+            $this->debug && $this->logger->info("Value adding is started.",[$key,$value,$options]);
             switch ($options['type']) {
                 case "string":
                 case "text":
@@ -220,15 +220,13 @@ class ImportManager
                 case "object":
                     $value = $this->setObjectValue($item, $key, $value, $options);
                     break;
-                case "mixed":
-                    $value = $this->setMixedValue($item,$key,$value,$options);
             }
 
             if (array_key_exists('value', $options)) {
                 $value = $options['value'];
             }
 
-            if(isset($options['mapped']) && $mapped!==false){
+            if(!isset($options['mapped']) || (isset($options['mapped']) && $options['mapped']!==false)){
                 $value ?
                     $this->accessor->setValue($item, $key, $value) :
                     $this->logger->alert("Value is null for $key.");
