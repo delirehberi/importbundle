@@ -158,7 +158,10 @@ class ImportManager
                 $this->equalise($map, $key, $value, $newItem);
             }
             $data[] = $newItem;
-            $this->em->persist($newItem);
+            if(!is_null($newItem))
+            {
+                $this->em->persist($newItem);
+            }
         }
         $this->em->flush();
 
@@ -183,7 +186,9 @@ class ImportManager
 
     private function equalise($map, $key, $value, &$item)
     {
-        $this->debug && $this->logger->info("Equalising started.");
+        $this->debug && $this->logger->info("Equalising started.",[
+            $key,$value
+        ]);
         if (!array_key_exists('fields', $map)) {
             throw new ParameterNotFoundException("Fields parameter not found in mapping");
         }
