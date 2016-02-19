@@ -283,10 +283,7 @@ class ImportManager
         if (!method_exists($modifier, $options['method'])) {
             throw new \Exception("Method not found in service. Service: " . $options['service_id'] . " , method: " . $options['method']);
         }
-        $value = call_user_func_array([$modifier, $options['method']], [
-            $value, &$item, $this->connection, &$this->em
-        ]);
-
+        $value = $modifier->{$options['method']}($value, $item, $this->connection, $this->em);
         return $value;
     }
 
