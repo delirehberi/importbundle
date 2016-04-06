@@ -89,4 +89,3 @@ Documentation
 
 See the [summary](https://github.com/delirehberi/importbundle/blob/master/Resources/doc/summary.md).
 
-`sign`
